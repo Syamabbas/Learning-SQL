@@ -3,20 +3,33 @@
 SELECT
     p.nama_produk,
     t.total
-FROM produk p
-JOIN (
-    SELECT
-        id_produk,
-        SUM(jumlah) AS total
-    FROM transaksi
-    WHERE status = 'SUCCESS'
-      AND tanggal >= '2024-01-01'
-    GROUP BY id_produk
-) t
+FROM
+    (
+        SELECT
+            tv.id_produk,
+            SUM(tv.jumlah) AS total
+        FROM
+            (
+                SELECT
+                    id_produk,
+                    jumlah
+                FROM transaksi
+                WHERE status = 'SUCCESS'
+                  AND tanggal >= '2024-01-01'
+            ) tv
+        GROUP BY tv.id_produk
+    ) t
+JOIN
+    (
+        SELECT
+            id,
+            nama_produk
+        FROM produk
+        WHERE status = 'AKTIF'
+    ) p
     ON p.id = t.id_produk
 WHERE
-    p.status = 'AKTIF'
-    AND t.total > 100;
+    t.total > 100;
 
 -- CONTOH NYA JIKA DIBUAH KE CTE
 WITH transaksi_valid AS (
